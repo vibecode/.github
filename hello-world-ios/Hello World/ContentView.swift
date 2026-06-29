@@ -110,21 +110,26 @@ struct FolderSidebar: View {
     let notes: [NotebookNote]
 
     var body: some View {
-        List(selection: $selectedFolder) {
+        List {
             Section("iCloud") {
                 ForEach(folders, id: \.self) { folder in
-                    Label {
-                        HStack {
-                            Text(folder)
-                            Spacer()
-                            Text("\(count(for: folder))")
-                                .foregroundStyle(.secondary)
+                    Button {
+                        selectedFolder = folder
+                    } label: {
+                        Label {
+                            HStack {
+                                Text(folder)
+                                Spacer()
+                                Text("\(count(for: folder))")
+                                    .foregroundStyle(.secondary)
+                            }
+                        } icon: {
+                            Image(systemName: icon(for: folder))
+                                .foregroundStyle(.yellow)
                         }
-                    } icon: {
-                        Image(systemName: icon(for: folder))
-                            .foregroundStyle(.yellow)
                     }
-                    .tag(folder)
+                    .buttonStyle(.plain)
+                    .listRowBackground(selectedFolder == folder ? Color.yellow.opacity(0.14) : Color.clear)
                 }
             }
         }
@@ -161,11 +166,16 @@ struct NotesList: View {
     let deleteNotes: (IndexSet) -> Void
 
     var body: some View {
-        List(selection: $selectedNoteId) {
+        List {
             Section {
                 ForEach(notes) { note in
-                    NoteRow(note: note)
-                        .tag(note.id)
+                    Button {
+                        selectedNoteId = note.id
+                    } label: {
+                        NoteRow(note: note, isSelected: selectedNoteId == note.id)
+                    }
+                    .buttonStyle(.plain)
+                    .listRowBackground(selectedNoteId == note.id ? Color.yellow.opacity(0.14) : Color.clear)
                 }
                 .onDelete(perform: deleteNotes)
             } header: {
@@ -191,11 +201,13 @@ struct NotesList: View {
 
 struct NoteRow: View {
     let note: NotebookNote
+    let isSelected: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(note.title.isEmpty ? "Untitled Note" : note.title)
                 .font(.headline)
+                .foregroundStyle(.primary)
                 .lineLimit(1)
 
             HStack(spacing: 6) {
@@ -208,6 +220,7 @@ struct NoteRow: View {
             .font(.subheadline)
         }
         .padding(.vertical, 8)
+        .contentShape(Rectangle())
     }
 }
 
